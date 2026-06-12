@@ -20,4 +20,18 @@
         {{ form.submit() }}
     </p>
 </form>
+
+<hr>
+
+<h3>OAuth2 Login</h3>
+
+<p>
+    <a href="{{ url_for('github_login') }}">Login with GitHub</a>
+</p>
+
+<p>
+    <a href="{{ url_for('yandex_login') }}">Login with Yandex</a>
+</p>
+
+
 {% endblock %}

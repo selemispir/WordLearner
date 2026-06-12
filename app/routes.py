@@ -1,10 +1,10 @@
-from flask import render_template, redirect, url_for, flash, session, send_from_directory
+from flask import render_template, redirect, url_for, flash, session, send_from_directory, request
 from flask.views import MethodView
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db
+from app import db, oauth
 from app.forms import RegisterForm, LoginForm, WordForm, AccountForm, UploadForm, CategoryForm
 from app.models import User, Profile, Word, Category
 
@@ -68,6 +68,88 @@ def init_routes(app):
             flash("Invalid email or password.")
 
         return render_template("login.html", form=form)
+    
+
+    @app.route("/login/github")
+    def github_login():
+        if not app.config.get("GITHUB_CLIENT_ID") and not os.getenv("GITHUB_CLIENT_ID"):
+            flash("GitHub OAuth is not configured.")
+            return redirect(url_for("login"))
+
+        redirect_uri = url_for("github_callback", _external=True)
+        return oauth.github.authorize_redirect(redirect_uri)
+
+
+    @app.route("/auth/github/callback")
+    def github_callback():
+        token = oauth.github.authorize_access_token()
+        user_info = oauth.github.get("user").json()
+
+        username = user_info.get("login")
+        email = user_info.get("email") or f"{username}@github.local"
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            user = User(
+                username=username,
+                email=email,
+                password_hash=generate_password_hash("oauth-user")
+            )
+            db.session.add(user)
+            db.session.commit()
+
+            profile = Profile(user_id=user.id, bio="GitHub OAuth user")
+            db.session.add(profile)
+            db.session.commit()
+
+        session["user_id"] = user.id
+        session["username"] = user.username
+
+        flash("Logged in with GitHub.")
+        return redirect(url_for("dashboard"))
+
+
+    @app.route("/login/yandex")
+    def yandex_login():
+        if not app.config.get("YANDEX_CLIENT_ID") and not os.getenv("YANDEX_CLIENT_ID"):
+            flash("Yandex OAuth is not configured.")
+            return redirect(url_for("login"))
+
+        redirect_uri = url_for("yandex_callback", _external=True)
+        return oauth.yandex.authorize_redirect(redirect_uri)
+
+
+    @app.route("/auth/yandex/callback")
+    def yandex_callback():
+        token = oauth.yandex.authorize_access_token()
+        user_info = oauth.yandex.get("info").json()
+
+        username = user_info.get("login")
+        email = user_info.get("default_email") or f"{username}@yandex.local"
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            user = User(
+                username=username,
+                email=email,
+                password_hash=generate_password_hash("oauth-user")
+            )
+            db.session.add(user)
+            db.session.commit()
+
+            profile = Profile(user_id=user.id, bio="Yandex OAuth user")
+            db.session.add(profile)
+            db.session.commit()
+
+        session["user_id"] = user.id
+        session["username"] = user.username
+
+        flash("Logged in with Yandex.")
+        return redirect(url_for("dashboard"))
+
+
 
     @app.route("/dashboard")
     def dashboard():
