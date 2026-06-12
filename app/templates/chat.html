@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Live Chat</h2>
+
+<div id="messages" style="border:1px solid black; padding:10px; width:400px; height:200px; overflow:auto;"></div>
+
+<br>
+
+<input type="text" id="messageInput" placeholder="Write a message">
+<button onclick="sendMessage()">Send</button>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+    const socket = io();
+    const username = "{{ username }}";
+
+    function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const message = input.value;
+
+        if (message.trim() !== "") {
+            socket.emit("send_message", {
+                username: username,
+                message: message
+            });
+
+            input.value = "";
+        }
+    }
+
+    socket.on("receive_message", function(data) {
+        const messages = document.getElementById("messages");
+        const newMessage = document.createElement("p");
+
+        newMessage.innerHTML = "<strong>" + data.username + ":</strong> " + data.message;
+        messages.appendChild(newMessage);
+    });
+</script>
+{% endblock %}

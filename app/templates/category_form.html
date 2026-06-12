@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name() }}
+    </p>
+
+    <p>
+        {{ form.submit() }}
+    </p>
+</form>
+
+<p>
+    <a href="{{ url_for('categories') }}">Back to Categories</a>
+</p>
+{% endblock %}

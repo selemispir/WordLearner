@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Media Upload</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.file.label }}<br>
+        {{ form.file() }}
+    </p>
+
+    <p>
+        {{ form.submit() }}
+    </p>
+</form>
+
+<h3>Uploaded Files</h3>
+
+{% if files %}
+    <ul>
+        {% for file in files %}
+            <li>
+                <a href="{{ url_for('media_file', filename=file) }}" target="_blank">
+                    {{ file }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No files uploaded yet.</p>
+{% endif %}
+{% endblock %}

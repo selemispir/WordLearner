@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Account Management</h2>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username() }}
+    </p>
+
+    <p>
+        {{ form.email.label }}<br>
+        {{ form.email() }}
+    </p>
+
+    <p>
+        {{ form.current_password.label }}<br>
+        {{ form.current_password() }}
+    </p>
+
+    <p>
+        {{ form.new_password.label }}<br>
+        {{ form.new_password() }}
+    </p>
+
+    <p>
+        {{ form.submit() }}
+    </p>
+</form>
+{% endblock %}
